@@ -12,13 +12,6 @@ from termcolor import colored
 from pyfiglet import Figlet
 
 
-def listener():
-    """Open a netcat listener"""
-
-    print('\n')
-    print(colored("Set up a listener", 'red'))
-
-
 def payload_generator(imageurl):
     """Generate oneliner post exploitation command"""
 
@@ -111,8 +104,6 @@ def main():
     os.system("rm " + filename)
     # Generate and output payload
     payload_generator(urlimage)
-    # Open nc listener
-    listener()
 
 
 if __name__ == "__main__":
