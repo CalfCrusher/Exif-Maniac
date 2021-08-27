@@ -61,6 +61,7 @@ def uploadimage(file):
     """Upload image to transfer.sh free hosting service"""
 
     url = os.popen("curl -s --upload-file ./" + file + " https://transfer.sh/" + file).read()
+    print('\n')
     print(colored("[+] Image uploaded!", 'red'))
     print(url)
 
