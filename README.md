@@ -6,7 +6,7 @@
 
 -> Upload image to <a href="https://transfer.sh">transfer.sh</a> (Files stored for 14 days)
 
--> Generate one liner to launch on victim machine (OSX, Linux)
+-> Generate one liner to launch on victim machine (OSX, Linux) - no disk touched
 
 Exif Maniac include <a href="https://github.com/D4Vinci/Cuteit">Cuteit</a> that make a malicious ip a bit cuter 😄
 
