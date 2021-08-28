@@ -29,4 +29,5 @@ In most scenarios, hiding a payload inside an image file isn't required. In high
 ### TODO
 
 .Add EXIF data with pyexif2 library without using exiftool
+
 .Add meterpreter payloads
