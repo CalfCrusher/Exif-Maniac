@@ -8,7 +8,7 @@
 
 -> Generate one liner to launch on victim machine (OSX, Linux) - no disk touched
 
--> Set up netcat listener (could operate behind NAT)
+-> Set up netcat listener (works also behind NAT)
 
 Exif Maniac include <a href="https://github.com/D4Vinci/Cuteit">Cuteit</a> that make a malicious ip a bit cuter 😄
 
