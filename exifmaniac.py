@@ -5,7 +5,7 @@ from __future__ import absolute_import
 import random
 import string
 import os
-import lib.Cuteip as cit
+import lib.Cuteit as cit
 
 from PIL import Image
 from termcolor import colored
