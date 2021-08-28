@@ -25,3 +25,8 @@ Exif Maniac include <a href="https://github.com/D4Vinci/Cuteit">Cuteit</a> that 
 ***Why Embed Payloads into Images?***
 
 In most scenarios, hiding a payload inside an image file isn't required. In highly secure environments, however, where every domain is logged by firewall software, it may be beneficial to conceal the contents and origin of the payload. The usage of images to conceal payloads can make it difficult for sysadmins monitoring traffic to identify the activity as malicious or suspicious. Also, is sexy :D
+
+### TODO
+
+.Add EXIF data with pyexif2 library without using exiftool
+.Add meterpreter payloads
