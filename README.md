@@ -2,6 +2,8 @@
 
 **A Remote Code Execution Post Exploitation Framework via Exif Data in images**
 
+### Features
+
 -> Insert payload in images as Exif data
 
 -> Upload image to <a href="https://transfer.sh">transfer.sh</a> (Files stored for 14 days)
@@ -10,7 +12,7 @@
 
 -> Set up netcat listener (works also behind NAT)
 
-Exif Maniac include <a href="https://github.com/D4Vinci/Cuteit">Cuteit</a> that make a malicious ip a bit cuter 😄
+##### Exif Maniac include <a href="https://github.com/D4Vinci/Cuteit">Cuteit</a> that make a malicious ip a bit cuter 😄
 
 ### Usage
 
