@@ -24,7 +24,7 @@ def payload_generator(imageurl):
         system = input("Type number: ")
         if not system.isnumeric():
             continue
-        if int(system) == 1 or int(system) == 2:
+        elif int(system) == 1 or int(system) == 2:
             break
 
     # Generate oneliner for OSX
