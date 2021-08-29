@@ -20,7 +20,7 @@
 
 `$ cd Exif-Maniac && pip3 install -r requirements.txt`
 
-`$ python3 exifmaniac.py`
+`$ python3 ExifManiac.py`
  
 
 ## 
