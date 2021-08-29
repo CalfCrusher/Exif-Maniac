@@ -4,7 +4,7 @@
 
 ### Features
 
--> Insert payload in images as Exif data
+-> Insert payload in images as Exif data (bash reverse shell)
 
 -> Upload image to <a href="https://transfer.sh">transfer.sh</a> (Files stored for 14 days)
 
