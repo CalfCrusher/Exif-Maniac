@@ -1,4 +1,4 @@
-# Exif Maniac <img src="https://upload.wikimedia.org/wikipedia/commons/8/8c/Blue_Python_3.6%2B_Shield_Badge.svg" />
+# Exif Maniac
 
 **Post Exploitation Framework via Exif Data in images**
 
