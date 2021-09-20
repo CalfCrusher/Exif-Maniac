@@ -2,6 +2,8 @@
 
 **Post Exploitation Framework via Exif Data in images**
 
+![](https://github.com/CalfCrusher/Exif-Maniac/blob/main/ExifManiac.png)
+
 ### Features
 
 -> Insert payload in images as Exif data (bash reverse shell)
