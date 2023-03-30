@@ -8,7 +8,7 @@
 
 -> Upload image to <a href="https://transfer.sh">transfer.sh</a> (Files stored for 14 days)
 
--> Generate one liner to launch on victim machine (OSX, Linux) - no disk touched
+-> Generate one liner to launch on victim machine (OSX, Linux) - running in RAM
 
 -> Set up netcat listener (works also behind NAT)
 
